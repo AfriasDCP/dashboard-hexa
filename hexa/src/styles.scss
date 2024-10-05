@@ -1,1 +1,37 @@
 /* You can add global styles to this file, and also import other style files */
+
+body {
+  margin: 0px !important;
+  background-image: url('assets/img/bg-hexa5.jpg');
+  backdrop-filter: brightness(0.2);
+}
+
+.text-danger {
+  color: red;
+}
+
+/* Importing Bootstrap SCSS file. */
+@import 'bootstrap/scss/bootstrap';
+
+
+table > thead > tr > th {
+  --bs-bg-opacity: 1;
+  background-color: rgba(33, 37, 41, 1) !important;
+  color: #fff !important;
+}
+
+table {
+  --bs-table-striped-color: #fff !important;
+  --bs-table-striped-bg: rgba(0, 0, 0, 0.374);
+  --bs-table-color: #fff !important;
+  --bs-table-bg: #212529 !important;
+}
+
+table > tbody > tr > td {
+  padding: 0.3rem 0.3rem !important;
+}
+
+.vis-tooltip {
+  background-color: rgb(33, 37, 41) !important;
+  color: #fff !important;
+}
