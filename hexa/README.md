@@ -12,7 +12,7 @@ Run `ng generate component component-name` to generate a new component. You can 
 
 ## Build
 
-Run `ng build --configuration production --base-href=/dashboard-hexa/` to build the project. The build artifacts will be stored in the `dist/` directory.
+Run `ng build --configuration production --base-href=/dashboard-hexa/` to build the project. The build artifacts will be stored in the `dashboard-hexa/` directory.
 
 ## Running unit tests
 

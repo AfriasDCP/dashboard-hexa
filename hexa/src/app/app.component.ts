@@ -138,14 +138,16 @@ export class AppComponent {
     'interfaces_peerings': '',
     'problemas_peerings': '',
     'ancho_banda_total': '',
-    'host': ''
+    'host': '',
+    'color_problemas_peerings': ''
   }];
 
   arrKioQro: any = [{
     'interfaces_peerings': '',
     'problemas_peerings': '',
     'ancho_banda_total': '',
-    'host': ''
+    'host': '',
+    'color_problemas_peerings': ''
   }];
 
   arrDevices: any = [];
@@ -1776,7 +1778,7 @@ export class AppComponent {
     let txtPeerings = '<table><tr><td>Dispositivo</td><td>Interface</td><td>Proveedor</td></tr>';
     let ancho_banda_arista = peering_Arista.length >= 10 ? peering_Arista.length / 10 : peering_Arista.length * 100;
     let umedida_arista = peering_Arista.length >= 10 ? 'Tbps' : 'Gbps';
-    let problemas_peerings_arista = peering_Arista.length > 0 ? 0 : 2;
+    let problemas_peerings_arista = 0;
 
     let ar = 0;
     await peering_Arista.forEach(async element => {
@@ -1789,8 +1791,8 @@ export class AppComponent {
 
       console.log('Problemas enlaces peering_Arista:', problems);
 
-      if (respO.result.length == 0) {
-        problemas_peerings_arista = 1;
+      if (respO.result.length == 0 || problems.result.length > 0) {
+        problemas_peerings_arista++;
         this.arrModalPeerings.push({
           device_name: element.device_name,
           interface_description: element.interface_description,
@@ -1810,284 +1812,308 @@ export class AppComponent {
 
       ar++;
       if (peering_Arista.length == ar) {
-        // Peerings Buenos Aires
-        const peering_ba = await peering.filter(x => x.device_name == "POP_BUEAIR-NVL4038-NE-X8A-CA");
-        console.log("Peerings BuenosAires:", peering_ba);
 
-        let ancho_banda_ba = peering_ba.length >= 10 ? peering_ba.length / 10 : peering_ba.length * 100;
-        let umedida_ba = peering_ba.length >= 10 ? 'Tbps' : 'Gbps';
-        let problemas_peerings_ba = peering_ba.length > 0 ? 0 : 2;
+        // Arreglo final
+        let problemasPeerings = 0;
+        let anchoBanda = 0;
+        let anchoBandaTotal = 0;
+        let unidadMedida = '';
+        if (problemas_peerings_arista > 0) {
+          problemasPeerings = 1;
+        }
 
-        let ba = 0;
-        await peering_ba.forEach(async element => {
-          console.log("Peering BA: ", element);
-
-          const respO = await this.zabbixService.getItemInterface(14107, element.interface_description);
-          console.log("Resp Interfaces Peering BA: ", respO.result);
-
-          const problems = await this.zabbixService.getProblems(14107, element.interface_description ? element.interface_description : element.interface_description.split('_')[2]);
-
-          console.log('Problemas enlaces peering_ba:', problems);
-
-          if (respO.result.length == 0) {
-            problemas_peerings_ba = 1;
-            this.arrModalPeerings.push({
-              device_name: element.device_name,
-              interface_description: element.interface_description,
-              provider_name: element.provider_name,
-              error: 1
-            });
-            txtPeerings = txtPeerings + '<tr><td>' + element.device_name + '</td><td>' + element.interface_description + '</td><td>' + element.provider_name + '</td></tr>';
-          } else {
-            this.arrModalPeerings.push({
-              device_name: element.device_name,
-              interface_description: element.interface_description,
-              provider_name: element.provider_name,
-              error: 0
-            });
-            txtPeerings = txtPeerings + '<tr><td>' + element.device_name + '</td><td>' + element.interface_description + '</td><td>' + element.provider_name + '</td></tr>';
-          }
-
-          ba++;
-
-          if (peering_ba.length == ba) {
-            // Peerings HostDime
-            const peering_HostDime = await peering.filter(x => x.device_name == "POP-HOST-DIME-GDL-NE40-X8A-CA");
-            console.log("Peerings HostDime:", peering_ba);
-
-            let ancho_banda_HostDime = peering_HostDime.length >= 10 ? peering_HostDime.length / 10 : peering_HostDime.length * 100;
-            let umedida_HostDime = peering_HostDime.length >= 10 ? 'Tbps' : 'Gbps';
-            let problemas_peerings_HostDime = peering_HostDime.length > 0 ? 0 : 2;
-
-            let hd = 0;
-            await peering_HostDime.forEach(async element => {
-              console.log("Peering HostDime: ", element);
-
-              const respO = await this.zabbixService.getItemInterface(14105, element.interface_description);
-              console.log("Resp Interfaces Peering HostDime: ", respO.result);
-
-              const problems = await this.zabbixService.getProblems(14105, element.interface_description ? element.interface_description : element.interface_description.split('_')[1]);
-
-              console.log('Problemas enlaces peering_HostDime:', problems);
-
-              if (respO.result.length == 0) {
-                problemas_peerings_HostDime = 1;
-                this.arrModalPeerings.push({
-                  device_name: element.device_name,
-                  interface_description: element.interface_description,
-                  provider_name: element.provider_name,
-                  error: 1
-                });
-                txtPeerings = txtPeerings + '<tr><td>' + element.device_name + '</td><td>' + element.interface_description + '</td><td>' + element.provider_name + '</td></tr>';
-              } else {
-                this.arrModalPeerings.push({
-                  device_name: element.device_name,
-                  interface_description: element.interface_description,
-                  provider_name: element.provider_name,
-                  error: 0
-                });
-                txtPeerings = txtPeerings + '<tr><td>' + element.device_name + '</td><td>' + element.interface_description + '</td><td>' + element.provider_name + '</td></tr>';
-              }
-
-              hd++;
-              if (peering_HostDime.length == hd) {
-                // Peerings Tlaquepaque
-                const peering_Tlaquepaque = await peering.filter(x => x.device_name == "POP_TLAQUE-JAL86450-X16A-CA");
-                console.log("Peerings Tlaquepaque:", peering_Tlaquepaque);
-
-                let ancho_banda_Tlaquepaque = peering_Tlaquepaque.length >= 10 ? peering_Tlaquepaque.length / 10 : peering_Tlaquepaque.length * 100;
-                let problemas_peerings_Tlaquepaque = peering_Tlaquepaque.length > 0 ? 0 : 2;
-
-                let tla = 0;
-                await peering_Tlaquepaque.forEach(async element => {
-                  console.log("Peering Tlaquepaque: ", element);
-
-                  const respO = await this.zabbixService.getItemInterface(14102, element.interface_description);
-                  console.log("Resp Interfaces Peering Tlaquepaque: ", respO.result);
-
-                  const problems = await this.zabbixService.getProblems(14102, element.interface_description ? element.interface_description : element.interface_description.split('_')[2]);
-
-                  console.log('Problemas enlaces peering_Tlaquepaque:', problems);
-
-                  if (respO.result.length == 0) {
-                    problemas_peerings_Tlaquepaque = 1;
-                    this.arrModalPeerings.push({
-                      device_name: element.device_name,
-                      interface_description: element.interface_description,
-                      provider_name: element.provider_name,
-                      error: 1
-                    });
-                    txtPeerings = txtPeerings + '<tr><td>' + element.device_name + '</td><td>' + element.interface_description + '</td><td>' + element.provider_name + '</td></tr>';
-                  } else {
-                    this.arrModalPeerings.push({
-                      device_name: element.device_name,
-                      interface_description: element.interface_description,
-                      provider_name: element.provider_name,
-                      error: 0
-                    });
-                    txtPeerings = txtPeerings + '<tr><td>' + element.device_name + '</td><td>' + element.interface_description + '</td><td>' + element.provider_name + '</td></tr>';
-                  }
-
-                  tla++;
-                  if (peering_Tlaquepaque.length == tla) {
-                    // Peerings Kio Mty
-                    const peering_Mty = await peering.filter(x => x.device_name == "POP_KIO-MTY-NE40E-X8A-CA");
-                    console.log("Peerings Kio Mty:", peering_Mty);
-
-                    let ancho_banda_Mty = peering_Mty.length >= 10 ? peering_Mty.length / 10 : peering_Mty.length * 100;
-                    let problemas_peerings_Mty = peering_Mty.length > 0 ? 0 : 2;
-
-                    let mty = 0;
-                    await peering_Mty.forEach(async element => {
-                      console.log("Peering Kio Mty: ", element);
-
-                      const respO = await this.zabbixService.getItemInterface(14102, element.interface_description);
-                      console.log("Resp Interfaces Peering Kio Mty: ", respO.result);
-
-                      const problems = await this.zabbixService.getProblems(14102, element.interface_description ? element.interface_description : element.interface_description.split('_')[2]);
-
-                      console.log('Problemas enlaces peering_Mty:', problems);
-
-                      if (respO.result.length == 0) {
-                        problemas_peerings_Mty = 1;
-                        this.arrModalPeerings.push({
-                          device_name: element.device_name,
-                          interface_description: element.interface_description,
-                          provider_name: element.provider_name,
-                          error: 1
-                        });
-                        txtPeerings = txtPeerings + '<tr><td>' + element.device_name + '</td><td>' + element.interface_description + '</td><td>' + element.provider_name + '</td></tr>';
-                      } else {
-                        this.arrModalPeerings.push({
-                          device_name: element.device_name,
-                          interface_description: element.interface_description,
-                          provider_name: element.provider_name,
-                          error: 0
-                        });
-                        txtPeerings = txtPeerings + '<tr><td>' + element.device_name + '</td><td>' + element.interface_description + '</td><td>' + element.provider_name + '</td></tr>';
-                      }
-
-                      mty++;
-                      if (peering_Mty.length == mty) {
-                        // Peerings Tlalnepantla
-                        const peering_Tlalnepantla = await peering.filter(x => x.device_name == "POP-TLALNE-NE-X16A");
-                        console.log("Peerings Tlalnepantla:", peering_Tlalnepantla);
-
-                        let ancho_banda_Tlalnepantla = peering_Tlalnepantla.length >= 10 ? peering_Tlalnepantla.length / 10 : peering_Tlalnepantla.length * 100;
-                        let problemas_peerings_Tlalnepantla = peering_Tlalnepantla.length > 0 ? 0 : 2;
-
-                        let tlalne = 0;
-                        await peering_Tlalnepantla.forEach(async element => {
-                          console.log("Peering Tlalnepantla: ", element);
-
-                          const respO = await this.zabbixService.getItemInterface(14103, element.interface_description);
-                          console.log("Resp Interfaces Peering Tlalnepantla: ", respO.result);
-
-                          const problems = await this.zabbixService.getProblems(14103, element.interface_description ? element.interface_description : element.interface_description.split('_')[1]);
-
-                          console.log('Problemas enlaces peering_Tlalnepantla:', problems);
-
-                          if (respO.result.length == 0) {
-                            problemas_peerings_Tlalnepantla = 1;
-                            this.arrModalPeerings.push({
-                              device_name: element.device_name,
-                              interface_description: element.interface_description,
-                              provider_name: element.provider_name,
-                              error: 1
-                            });
-                            txtPeerings = txtPeerings + '<tr><td>' + element.device_name + '</td><td>' + element.interface_description + '</td><td>' + element.provider_name + '</td></tr>';
-                          } else {
-                            this.arrModalPeerings.push({
-                              device_name: element.device_name,
-                              interface_description: element.interface_description,
-                              provider_name: element.provider_name,
-                              error: 0
-                            });
-                            txtPeerings = txtPeerings + '<tr><td>' + element.device_name + '</td><td>' + element.interface_description + '</td><td>' + element.provider_name + '</td></tr>';
-                          }
-
-                          tlalne++;
-                          if (peering_Tlalnepantla.length == tlalne) {
-                            // Peerings Churubusco
-                            const peering_Churubusco = await peering.filter(x => x.device_name == "POP-CHURUB-NE40-X8A");
-                            console.log("Peerings Churubusco:", peering_Churubusco);
-
-                            let ancho_banda_Churubusco = peering_Churubusco.length >= 10 ? peering_Churubusco.length / 10 : peering_Churubusco.length * 100;
-                            let problemas_peerings_Churubusco = peering_Churubusco.length > 0 ? 0 : 2;
-
-                            let chu = 0;
-                            await peering_Churubusco.forEach(async element => {
-                              console.log("Peering Churubusco: ", element);
-
-                              const respO = await this.zabbixService.getItemInterface(14099, element.interface_description);
-                              console.log("Resp Interfaces Peering Churubusco: ", respO.result);
-
-                              const problems = await this.zabbixService.getProblems(14099, element.interface_description ? element.interface_description : element.interface_description.split('_')[1]);
-
-                              console.log('Problemas enlaces peering_Churubusco:', problems);
-
-                              if (respO.result.length == 0) {
-                                problemas_peerings_Churubusco = 1;
-                                this.arrModalPeerings.push({
-                                  device_name: element.device_name,
-                                  interface_description: element.interface_description,
-                                  provider_name: element.provider_name,
-                                  error: 1
-                                });
-                                txtPeerings = txtPeerings + '<tr><td>' + element.device_name + '</td><td>' + element.interface_description + '</td><td>' + element.provider_name + '</td></tr>';
-                              } else {
-                                this.arrModalPeerings.push({
-                                  device_name: element.device_name,
-                                  interface_description: element.interface_description,
-                                  provider_name: element.provider_name,
-                                  error: 0
-                                });
-                                txtPeerings = txtPeerings + '<tr><td>' + element.device_name + '</td><td>' + element.interface_description + '</td><td>' + element.provider_name + '</td></tr>';
-                              }
-
-                              chu++;
-                              if (peering_Churubusco.length == chu) {
-                                // Arreglo final
-                                let problemasPeerings = 0;
-                                let anchoBanda = 0;
-                                let anchoBandaTotal = 0;
-                                let unidadMedida = '';
-                                if (problemas_peerings_arista == 1 || problemas_peerings_ba == 1 || problemas_peerings_HostDime == 1
-                                  || problemas_peerings_Tlaquepaque == 1 || problemas_peerings_Mty == 1 || problemas_peerings_Tlalnepantla == 1
-                                  || problemas_peerings_Churubusco == 1) {
-                                  problemasPeerings = 1;
-                                }
-
-                                anchoBanda = peering_Arista.length + peering_ba.length + peering_HostDime.length +
-                                  peering_Tlaquepaque.length + peering_Mty.length + peering_Tlalnepantla.length + peering_Churubusco.length;
-                                anchoBandaTotal = anchoBanda > 10 ? anchoBanda / 10 : anchoBanda * 100;
-                                unidadMedida = anchoBanda < 10 ? 'Gbps' : 'Tbps';
+        anchoBanda = peering_Arista.length;
+        anchoBandaTotal = anchoBanda > 10 ? anchoBanda / 10 : anchoBanda * 100;
+        unidadMedida = anchoBanda < 10 ? 'Gbps' : 'Tbps';
 
 
-                                this.arrArista[0]['interfaces_peerings'] = txtPeerings;
-                                this.arrArista[0]['problemas_peerings'] = problemasPeerings;
-                                this.arrArista[0]['ancho_banda_total'] = anchoBandaTotal + unidadMedida;
-                                this.arrArista[0]['host'] = arr_datos_arista.result.length > 0 ? arr_datos_arista.result[0].name + '\n' + arr_datos_arista.result[0].interfaces[0].ip : '';
+        this.arrArista[0]['interfaces_peerings'] = txtPeerings;
+        this.arrArista[0]['problemas_peerings'] = problemasPeerings;
+        this.arrArista[0]['color_problemas_peerings'] = problemasPeerings > 0 ? problemas_peerings_arista == peering_Arista.length ? 'red' : 'yellow' : '';
+        this.arrArista[0]['ancho_banda_total'] = anchoBandaTotal + unidadMedida;
+        this.arrArista[0]['host'] = arr_datos_arista.result.length > 0 ? arr_datos_arista.result[0].name + '\n' + arr_datos_arista.result[0].interfaces[0].ip : '';
 
-                                this.arrModalPeerings.sort((a, b) => b.error - a.error);
-                              }
+        this.arrModalPeerings.sort((a, b) => b.error - a.error);
 
-                            });
-                          }
 
-                        });
-                      }
+        // // Peerings Buenos Aires
+        // const peering_ba = await peering.filter(x => x.device_name == "POP_BUEAIR-NVL4038-NE-X8A-CA");
+        // console.log("Peerings BuenosAires:", peering_ba);
 
-                    });
-                  }
+        // let ancho_banda_ba = peering_ba.length >= 10 ? peering_ba.length / 10 : peering_ba.length * 100;
+        // let umedida_ba = peering_ba.length >= 10 ? 'Tbps' : 'Gbps';
+        // let problemas_peerings_ba = peering_ba.length > 0 ? 0 : 2;
 
-                });
-              }
+        // let ba = 0;
+        // await peering_ba.forEach(async element => {
+        //   console.log("Peering BA: ", element);
 
-            });
-          }
+        //   const respO = await this.zabbixService.getItemInterface(14107, element.interface_description);
+        //   console.log("Resp Interfaces Peering BA: ", respO.result);
 
-        });
+        //   const problems = await this.zabbixService.getProblems(14107, element.interface_description ? element.interface_description : element.interface_description.split('_')[2]);
+
+        //   console.log('Problemas enlaces peering_ba:', problems);
+
+        //   if (respO.result.length == 0 || problems.result.length > 0) {
+        //     problemas_peerings_ba = 1;
+        //     this.arrModalPeerings.push({
+        //       device_name: element.device_name,
+        //       interface_description: element.interface_description,
+        //       provider_name: element.provider_name,
+        //       error: 1
+        //     });
+        //     txtPeerings = txtPeerings + '<tr><td>' + element.device_name + '</td><td>' + element.interface_description + '</td><td>' + element.provider_name + '</td></tr>';
+        //   } else {
+        //     this.arrModalPeerings.push({
+        //       device_name: element.device_name,
+        //       interface_description: element.interface_description,
+        //       provider_name: element.provider_name,
+        //       error: 0
+        //     });
+        //     txtPeerings = txtPeerings + '<tr><td>' + element.device_name + '</td><td>' + element.interface_description + '</td><td>' + element.provider_name + '</td></tr>';
+        //   }
+
+        //   ba++;
+
+        //   if (peering_ba.length == ba) {
+        //     // Peerings HostDime
+        //     const peering_HostDime = await peering.filter(x => x.device_name == "POP-HOST-DIME-GDL-NE40-X8A-CA");
+        //     console.log("Peerings HostDime:", peering_ba);
+
+        //     let ancho_banda_HostDime = peering_HostDime.length >= 10 ? peering_HostDime.length / 10 : peering_HostDime.length * 100;
+        //     let umedida_HostDime = peering_HostDime.length >= 10 ? 'Tbps' : 'Gbps';
+        //     let problemas_peerings_HostDime = peering_HostDime.length > 0 ? 0 : 2;
+
+        //     let hd = 0;
+        //     await peering_HostDime.forEach(async element => {
+        //       console.log("Peering HostDime: ", element);
+
+        //       const respO = await this.zabbixService.getItemInterface(14105, element.interface_description);
+        //       console.log("Resp Interfaces Peering HostDime: ", respO.result);
+
+        //       const problems = await this.zabbixService.getProblems(14105, element.interface_description ? element.interface_description : element.interface_description.split('_')[1]);
+
+        //       console.log('Problemas enlaces peering_HostDime:', problems);
+
+        //       if (respO.result.length == 0 || problems.result.length > 0) {
+        //         problemas_peerings_HostDime = 1;
+        //         this.arrModalPeerings.push({
+        //           device_name: element.device_name,
+        //           interface_description: element.interface_description,
+        //           provider_name: element.provider_name,
+        //           error: 1
+        //         });
+        //         txtPeerings = txtPeerings + '<tr><td>' + element.device_name + '</td><td>' + element.interface_description + '</td><td>' + element.provider_name + '</td></tr>';
+        //       } else {
+        //         this.arrModalPeerings.push({
+        //           device_name: element.device_name,
+        //           interface_description: element.interface_description,
+        //           provider_name: element.provider_name,
+        //           error: 0
+        //         });
+        //         txtPeerings = txtPeerings + '<tr><td>' + element.device_name + '</td><td>' + element.interface_description + '</td><td>' + element.provider_name + '</td></tr>';
+        //       }
+
+        //       hd++;
+        //       if (peering_HostDime.length == hd) {
+        //         // Peerings Tlaquepaque
+        //         const peering_Tlaquepaque = await peering.filter(x => x.device_name == "POP_TLAQUE-JAL86450-X16A-CA");
+        //         console.log("Peerings Tlaquepaque:", peering_Tlaquepaque);
+
+        //         let ancho_banda_Tlaquepaque = peering_Tlaquepaque.length >= 10 ? peering_Tlaquepaque.length / 10 : peering_Tlaquepaque.length * 100;
+        //         let problemas_peerings_Tlaquepaque = peering_Tlaquepaque.length > 0 ? 0 : 2;
+
+        //         let tla = 0;
+        //         await peering_Tlaquepaque.forEach(async element => {
+        //           console.log("Peering Tlaquepaque: ", element);
+
+        //           const respO = await this.zabbixService.getItemInterface(14102, element.interface_description);
+        //           console.log("Resp Interfaces Peering Tlaquepaque: ", respO.result);
+
+        //           const problems = await this.zabbixService.getProblems(14102, element.interface_description ? element.interface_description : element.interface_description.split('_')[2]);
+
+        //           console.log('Problemas enlaces peering_Tlaquepaque:', problems);
+
+        //           if (respO.result.length == 0 || problems.result.length > 0) {
+        //             problemas_peerings_Tlaquepaque = 1;
+        //             this.arrModalPeerings.push({
+        //               device_name: element.device_name,
+        //               interface_description: element.interface_description,
+        //               provider_name: element.provider_name,
+        //               error: 1
+        //             });
+        //             txtPeerings = txtPeerings + '<tr><td>' + element.device_name + '</td><td>' + element.interface_description + '</td><td>' + element.provider_name + '</td></tr>';
+        //           } else {
+        //             this.arrModalPeerings.push({
+        //               device_name: element.device_name,
+        //               interface_description: element.interface_description,
+        //               provider_name: element.provider_name,
+        //               error: 0
+        //             });
+        //             txtPeerings = txtPeerings + '<tr><td>' + element.device_name + '</td><td>' + element.interface_description + '</td><td>' + element.provider_name + '</td></tr>';
+        //           }
+
+        //           tla++;
+        //           if (peering_Tlaquepaque.length == tla) {
+        //             // Peerings Kio Mty
+        //             const peering_Mty = await peering.filter(x => x.device_name == "POP_KIO-MTY-NE40E-X8A-CA");
+        //             console.log("Peerings Kio Mty:", peering_Mty);
+
+        //             let ancho_banda_Mty = peering_Mty.length >= 10 ? peering_Mty.length / 10 : peering_Mty.length * 100;
+        //             let problemas_peerings_Mty = peering_Mty.length > 0 ? 0 : 2;
+
+        //             let mty = 0;
+        //             await peering_Mty.forEach(async element => {
+        //               console.log("Peering Kio Mty: ", element);
+
+        //               const respO = await this.zabbixService.getItemInterface(14102, element.interface_description);
+        //               console.log("Resp Interfaces Peering Kio Mty: ", respO.result);
+
+        //               const problems = await this.zabbixService.getProblems(14102, element.interface_description ? element.interface_description : element.interface_description.split('_')[2]);
+
+        //               console.log('Problemas enlaces peering_Mty:', problems);
+
+        //               if (respO.result.length == 0 || problems.result.length > 0) {
+        //                 problemas_peerings_Mty = 1;
+        //                 this.arrModalPeerings.push({
+        //                   device_name: element.device_name,
+        //                   interface_description: element.interface_description,
+        //                   provider_name: element.provider_name,
+        //                   error: 1
+        //                 });
+        //                 txtPeerings = txtPeerings + '<tr><td>' + element.device_name + '</td><td>' + element.interface_description + '</td><td>' + element.provider_name + '</td></tr>';
+        //               } else {
+        //                 this.arrModalPeerings.push({
+        //                   device_name: element.device_name,
+        //                   interface_description: element.interface_description,
+        //                   provider_name: element.provider_name,
+        //                   error: 0
+        //                 });
+        //                 txtPeerings = txtPeerings + '<tr><td>' + element.device_name + '</td><td>' + element.interface_description + '</td><td>' + element.provider_name + '</td></tr>';
+        //               }
+
+        //               mty++;
+        //               if (peering_Mty.length == mty) {
+        //                 // Peerings Tlalnepantla
+        //                 const peering_Tlalnepantla = await peering.filter(x => x.device_name == "POP-TLALNE-NE-X16A");
+        //                 console.log("Peerings Tlalnepantla:", peering_Tlalnepantla);
+
+        //                 let ancho_banda_Tlalnepantla = peering_Tlalnepantla.length >= 10 ? peering_Tlalnepantla.length / 10 : peering_Tlalnepantla.length * 100;
+        //                 let problemas_peerings_Tlalnepantla = peering_Tlalnepantla.length > 0 ? 0 : 2;
+
+        //                 let tlalne = 0;
+        //                 await peering_Tlalnepantla.forEach(async element => {
+        //                   console.log("Peering Tlalnepantla: ", element);
+
+        //                   const respO = await this.zabbixService.getItemInterface(14103, element.interface_description);
+        //                   console.log("Resp Interfaces Peering Tlalnepantla: ", respO.result);
+
+        //                   const problems = await this.zabbixService.getProblems(14103, element.interface_description ? element.interface_description : element.interface_description.split('_')[1]);
+
+        //                   console.log('Problemas enlaces peering_Tlalnepantla:', problems);
+
+        //                   if (respO.result.length == 0 || problems.result.length > 0) {
+        //                     problemas_peerings_Tlalnepantla = 1;
+        //                     this.arrModalPeerings.push({
+        //                       device_name: element.device_name,
+        //                       interface_description: element.interface_description,
+        //                       provider_name: element.provider_name,
+        //                       error: 1
+        //                     });
+        //                     txtPeerings = txtPeerings + '<tr><td>' + element.device_name + '</td><td>' + element.interface_description + '</td><td>' + element.provider_name + '</td></tr>';
+        //                   } else {
+        //                     this.arrModalPeerings.push({
+        //                       device_name: element.device_name,
+        //                       interface_description: element.interface_description,
+        //                       provider_name: element.provider_name,
+        //                       error: 0
+        //                     });
+        //                     txtPeerings = txtPeerings + '<tr><td>' + element.device_name + '</td><td>' + element.interface_description + '</td><td>' + element.provider_name + '</td></tr>';
+        //                   }
+
+        //                   tlalne++;
+        //                   if (peering_Tlalnepantla.length == tlalne) {
+        //                     // Peerings Churubusco
+        //                     const peering_Churubusco = await peering.filter(x => x.device_name == "POP-CHURUB-NE40-X8A");
+        //                     console.log("Peerings Churubusco:", peering_Churubusco);
+
+        //                     let ancho_banda_Churubusco = peering_Churubusco.length >= 10 ? peering_Churubusco.length / 10 : peering_Churubusco.length * 100;
+        //                     let problemas_peerings_Churubusco = peering_Churubusco.length > 0 ? 0 : 2;
+
+        //                     let chu = 0;
+        //                     await peering_Churubusco.forEach(async element => {
+        //                       console.log("Peering Churubusco: ", element);
+
+        //                       const respO = await this.zabbixService.getItemInterface(14099, element.interface_description);
+        //                       console.log("Resp Interfaces Peering Churubusco: ", respO.result);
+
+        //                       const problems = await this.zabbixService.getProblems(14099, element.interface_description ? element.interface_description : element.interface_description.split('_')[1]);
+
+        //                       console.log('Problemas enlaces peering_Churubusco:', problems);
+
+        //                       if (respO.result.length == 0 || problems.result.length > 0) {
+        //                         problemas_peerings_Churubusco = 1;
+        //                         this.arrModalPeerings.push({
+        //                           device_name: element.device_name,
+        //                           interface_description: element.interface_description,
+        //                           provider_name: element.provider_name,
+        //                           error: 1
+        //                         });
+        //                         txtPeerings = txtPeerings + '<tr><td>' + element.device_name + '</td><td>' + element.interface_description + '</td><td>' + element.provider_name + '</td></tr>';
+        //                       } else {
+        //                         this.arrModalPeerings.push({
+        //                           device_name: element.device_name,
+        //                           interface_description: element.interface_description,
+        //                           provider_name: element.provider_name,
+        //                           error: 0
+        //                         });
+        //                         txtPeerings = txtPeerings + '<tr><td>' + element.device_name + '</td><td>' + element.interface_description + '</td><td>' + element.provider_name + '</td></tr>';
+        //                       }
+
+        //                       chu++;
+        //                       if (peering_Churubusco.length == chu) {
+        //                         // Arreglo final
+        //                         let problemasPeerings = 0;
+        //                         let anchoBanda = 0;
+        //                         let anchoBandaTotal = 0;
+        //                         let unidadMedida = '';
+        //                         if (problemas_peerings_arista == 1 || problemas_peerings_ba == 1 || problemas_peerings_HostDime == 1
+        //                           || problemas_peerings_Tlaquepaque == 1 || problemas_peerings_Mty == 1 || problemas_peerings_Tlalnepantla == 1
+        //                           || problemas_peerings_Churubusco == 1) {
+        //                           problemasPeerings = 1;
+        //                         }
+
+        //                         anchoBanda = peering_Arista.length + peering_ba.length + peering_HostDime.length +
+        //                           peering_Tlaquepaque.length + peering_Mty.length + peering_Tlalnepantla.length + peering_Churubusco.length;
+        //                         anchoBandaTotal = anchoBanda > 10 ? anchoBanda / 10 : anchoBanda * 100;
+        //                         unidadMedida = anchoBanda < 10 ? 'Gbps' : 'Tbps';
+
+
+        //                         this.arrArista[0]['interfaces_peerings'] = txtPeerings;
+        //                         this.arrArista[0]['problemas_peerings'] = problemasPeerings;
+        //                         this.arrArista[0]['ancho_banda_total'] = anchoBandaTotal + unidadMedida;
+        //                         this.arrArista[0]['host'] = arr_datos_arista.result.length > 0 ? arr_datos_arista.result[0].name + '\n' + arr_datos_arista.result[0].interfaces[0].ip : '';
+
+        //                         this.arrModalPeerings.sort((a, b) => b.error - a.error);
+        //                       }
+
+        //                     });
+        //                   }
+
+        //                 });
+        //               }
+
+        //             });
+        //           }
+
+        //         });
+        //       }
+
+        //     });
+        //   }
+
+        // });
       }
 
     });
@@ -2121,7 +2147,7 @@ export class AppComponent {
     let txtPeerings = '<table><tr><td>Dispositivo</td><td>Interface</td><td>Proveedor</td></tr>';
     let ancho_banda_arista = peering_KioQro.length >= 10 ? peering_KioQro.length / 10 : peering_KioQro.length * 100;
     let umedida_arista = peering_KioQro.length >= 10 ? 'Tbps' : 'Gbps';
-    let problemas_peerings_kioqro = peering_KioQro.length > 0 ? 0 : 2;
+    let problemas_peerings_kioqro = 0;
 
     let ar = 0;
     await peering_KioQro.forEach(async element => {
@@ -2135,7 +2161,7 @@ export class AppComponent {
       console.log('Problemas enlaces peering_KioQro:', problems);
 
       if (respO.result.length == 0) {
-        problemas_peerings_kioqro = 1;
+        problemas_peerings_kioqro++;
         this.arrModalPeeringsKioQro.push({
           device_name: element.device_name,
           interface_description: element.interface_description,
@@ -2160,7 +2186,7 @@ export class AppComponent {
         let anchoBanda = 0;
         let anchoBandaTotal = 0;
         let unidadMedida = '';
-        if (problemas_peerings_kioqro == 1) {
+        if (problemas_peerings_kioqro > 0) {
           problemasPeerings = 1;
         }
 
@@ -2171,6 +2197,7 @@ export class AppComponent {
 
         this.arrKioQro[0]['interfaces_peerings'] = txtPeerings;
         this.arrKioQro[0]['problemas_peerings'] = problemasPeerings;
+        this.arrArista[0]['color_problemas_peerings'] = problemasPeerings > 0 ? problemas_peerings_kioqro == peering_KioQro.length ? 'red' : 'yellow' : '';
         this.arrKioQro[0]['ancho_banda_total'] = anchoBandaTotal + unidadMedida;
         this.arrKioQro[0]['host'] = arr_datos_kioqro.result.length > 0 ? arr_datos_kioqro.result[0].name + '\n' + arr_datos_kioqro.result[0].interfaces[0].ip : '';
 
@@ -2191,7 +2218,7 @@ export class AppComponent {
         title: this.arrArista[0].host,
         shape: 'image',
         size: 35,
-        image: './assets/img/peerings.svg',
+        image: this.arrArista[0]['problemas_peerings'] == 1 ? this.arrArista[0]['color_problemas_peerings'] == 'red' ? './assets/img/peering red.svg' : './assets/img/peering yellow.svg' : './assets/img/peerings.svg',
         level: 0,
         x: 0,
         y: -350,
@@ -2204,8 +2231,11 @@ export class AppComponent {
           color:'#ffffff',
           hover: {
             background: "#000000",
-            border: "#000000"
-          }
+            border: "#000000",
+          },
+          highlight: {
+            background: '#000000'
+          },
         },
         font: {
           color: '#ffffff',
@@ -2269,7 +2299,7 @@ export class AppComponent {
         title: this.arrKioQro[0].host,
         shape: 'image',
         size: 35,
-        image: './assets/img/peerings.svg',
+        image: this.arrKioQro[0]['problemas_peerings'] == 1 ? this.arrKioQro[0]['color_problemas_peerings'] == 'red' ? './assets/img/peering red.svg' : './assets/img/peering yellow.svg' : './assets/img/peerings.svg',
         level: 2,
         x: 0,
         y: 0,
@@ -2277,7 +2307,10 @@ export class AppComponent {
           coordinateOrigin: "center"
         },
         color: {
-          background: '#000000'
+          background: '#000000',
+          highlight: {
+            background: '#000000'
+          },
         },
         hover: {
           background: "#000000",
@@ -3178,6 +3211,8 @@ export class AppComponent {
       // #08ff08 Verde
     ];
     console.log('Edges: ', edges);
+    console.log('Nodes: ', nodes);
+
 
     var treeData = {
       nodes: nodes,
